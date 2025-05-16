@@ -6,6 +6,7 @@ import com.example.jetpackcomposeassignment2.model.Todo
 import com.example.jetpackcomposeassignment2.repository.TodoRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 
@@ -22,11 +23,14 @@ class TodoDetailViewModel(
     fun loadTodo(id: Int) {
         viewModelScope.launch {
             try {
-                _todo.value = repository.getTodoById(id).first()
-                _error.value = null
+                repository.getTodoById(id).collectLatest { result ->
+                    _todo.value = result
+                    _error.value = null
+                }
             } catch (e: Exception) {
                 _error.value = "Failed to load todo: ${e.message}"
             }
         }
+
     }
 }

@@ -10,7 +10,7 @@ interface TodoDao {
     fun getAll(): Flow<List<Todo>>
 
     @Query("SELECT * FROM Todo WHERE id = :id")
-    fun getById(id: Int): Flow<Todo>
+    fun getById(id: Int): Flow<Todo?>  // ✅ updated to return nullable Todo
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insert(todo: Todo)
@@ -20,6 +20,4 @@ interface TodoDao {
 
     @Query("DELETE FROM Todo")
     suspend fun deleteAll()
-
-
 }

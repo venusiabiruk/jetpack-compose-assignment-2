@@ -33,14 +33,38 @@ class TodoListViewModel(
         viewModelScope.launch {
             try {
                 repository.refreshTodos()
-                repository.todos.collectLatest { todoList ->
-                    _todos.value = todoList
-                }
                 _error.value = null
+
+                // Collect in a separate coroutine so it doesn't block finally
+                launch {
+                    repository.todos.collectLatest { todoList ->
+                        _todos.value = todoList
+                    }
+                }
             } catch (e: Exception) {
                 _error.value = "Failed to load todos: ${e.message}"
             } finally {
                 _isLoading.value = false
+            }
+            fun loadTodos() {
+                _isLoading.value = true
+                viewModelScope.launch {
+                    try {
+                        repository.refreshTodos()
+                        _error.value = null
+
+                        // Collect in a separate coroutine so it doesn't block finally
+                        launch {
+                            repository.todos.collectLatest { todoList ->
+                                _todos.value = todoList
+                            }
+                        }
+                    } catch (e: Exception) {
+                        _error.value = "Failed to load todos: ${e.message}"
+                    } finally {
+                        _isLoading.value = false
+                    }
+                }
             }
         }
     }
